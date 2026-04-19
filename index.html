@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS Visualizer | Page Replacement Simulator</title>
+    <meta name="description" content="A cinematic simulator for FIFO, LRU, and Optimal page replacement algorithms with real-time analysis.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="chart.js"></script>
+</head>
+<body>
+    <canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;"></canvas>
+    <div class="container">
+        <header class="animate-in">
+            <h1>OS Visualizer</h1>
+            <p>Master page replacement algorithms with real-time cinematic simulations and performance analytics.</p>
+        </header>
+
+        <section class="card animate-in">
+            <div class="input-group">
+                <div class="field">
+                    <label for="algorithm">Algorithm Strategy</label>
+                    <select id="algorithm">
+                        <option value="FIFO">First-In First-Out (FIFO)</option>
+                        <option value="LRU">Least Recently Used (LRU)</option>
+                        <option value="OPTIMAL">Optimal Strategy</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="frames">Memory Frames</label>
+                    <input type="number" id="frames" min="1" max="7" value="3">
+                </div>
+                <div class="field">
+                    <label for="reference-string">Reference String</label>
+                    <input type="text" id="reference-string" placeholder="7, 0, 1, 2, 0, 3..." value="7,0,1,2,0,3,0,4,2,3,0,3,2">
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem;">Separate numbers with commas</div>
+                </div>
+            </div>
+            
+            <div class="speed-control">
+                <label style="margin-bottom: 0;">Simulation Speed</label>
+                <input type="range" id="sim-speed" min="50" max="1000" step="50" value="300" dir="rtl">
+                <span id="speed-val" style="font-size: 0.8rem; min-width: 60px; font-weight: 700;">Fast</span>
+            </div>
+
+            <div class="actions">
+                <button id="btn-start" class="btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Simulate
+                </button>
+                <button id="btn-compare" class="btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20V14"></path></svg>
+                    Compare Stats
+                </button>
+                <button id="btn-random" class="btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    Generate Random
+                </button>
+            </div>
+        </section>
+
+        <section id="simulation-section" class="card" style="display: none; border-left: 4px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 id="sim-title" style="font-size: 1.5rem; letter-spacing: -0.5px;">Algorithm Evolution</h2>
+                <div id="sim-status-badge" style="padding: 0.3rem 0.8rem; background: rgba(99, 102, 241, 0.1); border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: var(--primary);">PROCESSING</div>
+            </div>
+
+            <div class="simulation-area" id="sim-output">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Hits</div>
+                    <div class="stat-val" id="stat-hits" style="color: var(--accent-hit);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Faults</div>
+                    <div class="stat-val" id="stat-faults" style="color: var(--accent-fault);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Hit Ratio</div>
+                    <div class="stat-val" id="stat-hit-ratio">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Efficiency</div>
+                    <div class="stat-val" id="stat-fault-ratio">0%</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison-section" class="card" style="display: none;">
+            <div style="display: flex; align-items: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.5rem; letter-spacing: -0.5px;">Global Performance Benchmarking</h2>
+                <div id="winner-announcement"></div>
+            </div>
+            <div class="chart-container" style="position: relative; height: 350px;">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </section>
+
+        <footer style="text-align: center; margin-top: 1rem; color: var(--text-muted); font-size: 0.8rem; padding-bottom: 2rem;">
+            Designed for interactive OS learning &bull; Modern Viz v2.0
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

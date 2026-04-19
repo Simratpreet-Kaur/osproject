@@ -1,0 +1,10 @@
+# OS Project Git Ignore
+.DS_Store
+node_modules/
+dist/
+build/
+*.log
+.env
+.vscode/
+.idea/
+*.zip
